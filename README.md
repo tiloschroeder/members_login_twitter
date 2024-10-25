@@ -6,6 +6,8 @@
 
 Automatically creates account and logs in the user.
 
+See a working demo at [members-login.dev](https://members-login.dev)
+
 ### REQUIREMENTS ###
 
 - Symphony CMS version 2.7.x and up (as of the day of the last release of this extension)
@@ -71,6 +73,3 @@ This form will redirect the user to twitter and then twitter will redirect the u
 
 MIT <http://deuxhuithuit.mit-license.org>
 
-*Voila !*
-
-Come say hi! -> <https://deuxhuithuit.com/>

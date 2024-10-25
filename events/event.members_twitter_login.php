@@ -50,28 +50,29 @@ class eventmembers_twitter_login extends Event
     {
         $TW_CONSUMER_KEY = Symphony::Configuration()->get('key', 'members_twitter_login');
         $TW_CONSUMER_SECRET = Symphony::Configuration()->get('secret', 'members_twitter_login');
-        if (is_array($_POST['member-twitter-action']) && isset($_POST['member-twitter-action']['login'])) {
+
+        if ( isset($_POST['member-twitter-action']['login']) ) {
             $_SESSION['OAUTH_SERVICE'] = 'twitter';
             $_SESSION['OAUTH_START_URL'] = $_REQUEST['redirect'];
             $_SESSION['OAUTH_MEMBERS_SECTION_ID'] = General::intval($_REQUEST['members-section-id']);
             $_SESSION['OAUTH_TOKEN'] = null;
-            
+
             $oauth = new OAuth($TW_CONSUMER_KEY, $TW_CONSUMER_SECRET);
             $request_token_response = @$oauth->getRequestToken('https://api.twitter.com/oauth/request_token');
-            
-            if ($request_token_response === false || empty($request_token_response)) {
+
+            if ( $request_token_response === false || empty($request_token_response) ) {
                 throw new Exception("Failed fetching request token, response was: " . $oauth->getLastResponse());
             } else {
                 $_SESSION['OAUTH_TOKEN'] = $request_token_response;
-                
+
                 redirect('https://api.twitter.com/oauth/authenticate?oauth_token=' . $request_token_response['oauth_token']);
             }
-        } elseif (isset($_POST['oauth_token']) && isset($_POST['oauth_verifier'])) {
+        } elseif ( isset($_POST['oauth_token']) && isset($_POST['oauth_verifier']) ) {
             $request_token = $_SESSION['OAUTH_TOKEN'];
-            if ($request_token == null || empty($request_token)) {
+            if ( $request_token == null || empty($request_token) ) {
                 throw new Exception('Could not find request token');
             }
-            if ($_POST['oauth_token'] != $request_token['oauth_token']) {
+            if ( $_POST['oauth_token'] != $request_token['oauth_token'] ) {
                 throw new Exception('Token do not match');
             }
             $oauth = new OAuth($TW_CONSUMER_KEY, $TW_CONSUMER_SECRET);
@@ -79,21 +80,21 @@ class eventmembers_twitter_login extends Event
 
             $access_token_url = 'https://api.twitter.com/oauth/access_token';
             $access_token_response = @$oauth->getAccessToken($access_token_url, "", $_POST['oauth_verifier'], 'POST');
-            
-            if ($access_token_response === false || empty($access_token_response)) {
+
+            if ( $access_token_response === false || empty($access_token_response) ) {
                 throw new Exception("Failed fetching request token, response was: " . $oauth->getLastResponse());
             } else {
                 $url = 'https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true';
                 $oauth->setToken($access_token_response['oauth_token'], $access_token_response['oauth_token_secret']);
                 $response = @$oauth->fetch($url);
-                if ($response !== false) {
+                if ( $response !== false ) {
                     $response = json_decode($oauth->getLastResponse());
-                    if (is_array($response)) {
+                    if ( is_array($response) ) {
                         $response = $response[0];
                     }
                 }
-                
-                if (is_object($response) && isset($response->screen_name)) {
+
+                if ( is_object($response) && isset($response->screen_name) ) {
                     $_SESSION['OAUTH_TIMESTAMP'] = time();
                     $_SESSION['OAUTH_SERVICE'] = 'twitter';
                     $_SESSION['ACCESS_TOKEN'] = $access_token_response['oauth_token'];
@@ -109,16 +110,16 @@ class eventmembers_twitter_login extends Event
                     $femail = $edriver->getField('email');
                     $mdriver = $edriver->getMemberDriver();
                     $email = $response->email;
-                    if (!$email) {
-                        $email = "twitter@" . $response->screen_name . ".com";
+                    if ( !$email ) {
+                        $email = $response->screen_name . "@example.org";
                     }
                     $m = $femail->fetchMemberIDBy($email);
-                    if (!$m) {
+                    if ( !$m ) {
                         $m = new Entry();
                         $m->set('section_id', $_SESSION['OAUTH_MEMBERS_SECTION_ID']);
                         $m->setData($femail->get('id'), array('value' => $email));
                         $twHandle = Symphony::Configuration()->get('twitter-handle-field', 'members_twitter_login');
-                        if ($twHandle) {
+                        if ( $twHandle ) {
                             $m->setData(General::intval($twHandle), array(
                                 'value' => $response->screen_name,
                             ));
@@ -130,7 +131,7 @@ class eventmembers_twitter_login extends Event
                     $login = $mdriver->login(array(
                         'email' => $email
                     ));
-                    if ($login) {
+                    if ( $login ) {
                         redirect($_SESSION['OAUTH_START_URL']);
                     } else {
                         throw new Exception('Twitter login failed');
@@ -142,8 +143,7 @@ class eventmembers_twitter_login extends Event
                     session_destroy();
                 }
             }
-        } elseif (is_array($_POST['member-twitter-action']) && isset($_POST['member-twitter-action']['logout']) ||
-                  is_array($_POST['member-action']) && isset($_POST['member-action']['logout'])) {
+        } elseif ( isset($_POST['member-action']['logout']) ) {
             $_SESSION['OAUTH_SERVICE'] = null;
             $_SESSION['OAUTH_START_URL'] = null;
             $_SESSION['OAUTH_MEMBERS_SECTION_ID'] = null;
