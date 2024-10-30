@@ -68,7 +68,7 @@ class eventmembers_twitter_login extends Event
                 redirect('https://api.twitter.com/oauth/authenticate?oauth_token=' . $request_token_response['oauth_token']);
             }
         } elseif ( isset($_POST['oauth_token']) && isset($_POST['oauth_verifier']) ) {
-            $request_token = $_SESSION['OAUTH_TOKEN'];
+            $request_token = $_SESSION['OAUTH_TOKEN'] ?? null;
             if ( $request_token == null || empty($request_token) ) {
                 throw new Exception('Could not find request token');
             }
